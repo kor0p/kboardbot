@@ -2,14 +2,14 @@
 #-*- coding:utf-8 -*-
 import telebot as tb
 from telebot.types import *
-
+from config import token
 id_=0
 
 eng='`qwertyuiop[]asdfghjkl;\'zxcvbnm,./~#&|QWERTYUIOP{}ASDFGHJKL:"ZXCVBNM<>?'
 
 ukr='ёйцукенгшщзхїфівапролджєячсмитьбю.Ё№?/ЙЦУКЕНГШЩЗХЇФІВАПРОЛДЖЄЯЧСМИТЬБЮ,'
 
-bot = tb.TeleBot('454578455:AAFSP0yk7hBVZE26gI9v-Qeu6Jpi2wrIfJA')
+bot = tb.TeleBot(token)
 
 def translit(t,ar1=eng,ar2=ukr):
 	for i in range(len(t)):

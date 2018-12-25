@@ -1,61 +1,57 @@
 
 #-*- coding:utf-8 -*-
-import telebot as tb
-from telebot.types import *
+import telebot
 from config import token
-id_=0
 
-eng='`qwertyuiop[]asdfghjkl;\'zxcvbnm,./~#&|QWERTYUIOP{}ASDFGHJKL:"ZXCVBNM<>?'
+eng = list('`qwertyuiop[]asdfghjkl;\'zxcvbnm,./~#&|QWERTYUIOP{}ASDFGHJKL:"ZXCVBNM<>?')
+ukr = list('ёйцукенгшщзхїфівапролджєячсмитьбю.Ё№?/ЙЦУКЕНГШЩЗХЇФІВАПРОЛДЖЄЯЧСМИТЬБЮ,')
 
-ukr='ёйцукенгшщзхїфівапролджєячсмитьбю.Ё№?/ЙЦУКЕНГШЩЗХЇФІВАПРОЛДЖЄЯЧСМИТЬБЮ,'
+bot = telebot.TeleBot(token)
 
-bot = tb.TeleBot(token)
+back_sign = '~'
 
-def translit(t,ar1=eng,ar2=ukr):
-	for i in range(len(t)):
-		if t[i] in ar1:
-			index=ar1.index(t[i])
-			t=t[:i]+ar2[index]+t[i+1:]
-	return t
+def translit(input_text, language_1 = eng,language_2 = ukr):
+	text = list(input_text)
+	for char_index in range(len(text)):
+		if text[char_index] in language_1:
+			text[char_index] = language_2[language_1.index(text[char_index])]
+	return ''.join(text)
 
 @bot.message_handler(commands=['start','help'])
 def message(m):
 	bot.send_message(m.from_user.id,
-		'Введіть текст на англійській розкладці, будь ласка !')
+		"""
+		Введіть текст на англійській розкладці, будь ласка !
+		Input text in English keyboard layout, please
+
+		Використовуйте ~ в кінці, щоб змінити розкладку назад
+		Use ~ in the end to get backward changes
+		""")
 
 @bot.message_handler(content_types=['text'])
 def message(m):
-	if m.text[-1]=='!':
+	if m.text[-1]==back_sign:
 		text=translit(m.text[:-1],ukr,eng)
 	else:
 		text=translit(m.text)
 	bot.send_message(m.chat.id,text)
 
-
 @bot.inline_handler(lambda query: len(query.query) > 0)
 def query_text(query):
-	global id_
-
-	id_+=1
-	q=query.query
-	results = [' ',]
-	title=''
-	
-	if q[-1]=='~':
-		temp=translit(q[:-1],ukr,eng)
+	text = query.query
+	if text[-1]==back_sign:
+		title = translit(text[:-1],ukr,eng)
 	else:
-		temp=translit(q)
-	
-	title+=temp
-	text=title
-	single_msg = InlineQueryResultArticle(
-		id=id_,
+		title = translit(text)
+	output_text = title
+	result = telebot.types.InlineQueryResultArticle(
+		id=query.id,
 		title=title,
-		input_message_content=InputTextMessageContent(message_text=text),
+		input_message_content=telebot.types.\
+		InputTextMessageContent(message_text=output_text),
 		)
-	results.append(single_msg)
 
-	bot.answer_inline_query(query.id,results)
+	bot.answer_inline_query(query.id,[result])
 
 
 if __name__ == '__main__':

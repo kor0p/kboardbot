@@ -6,17 +6,42 @@ random_list = (choice((0,)*(20-1)+(1,)) for i in range(100000))
 
 bot = telebot.TeleBot(token)
 
+languages = {
+    'en':{
+        'in':'Input some text!',
+        'out':'Руддщ',
+        'reset':'Reset',
+        'donate':'Donate me:)'
+    },'uk':{
+        'in':'Введіть текст!',
+        'out':'Ghbdsn',
+        'reset':'Ввід',
+        'donate':'Підтримати проект:)'
+    },'ru':{
+        'in':'Введите текст!',
+        'out':'Ghbdtn',
+        'reset':'Ввод',
+        'donate':'Поддержать проект:)'
+    }
+}
+
+def lang(user):
+    l_code = user.language_code
+    l_code = l_code or 'en'
+    if '-' in l_code:
+        l_code = l_code.strip('-')[0]
+    return languages[l_code]
 
 class Layout:
     def __init__(self, name, value, what_different='', have_big_letters=True):
         self.name = name
         self.big = have_big_letters
-        value = value.replace('\n', '').replace('    ', '')
+        value = value.replace('\n', '').replace(' ', '')
         self.value = value[:96]
         self.spec = value[96:]
         if not self.spec:
             self.spec = self.value
-        self.dif = what_different
+        self.dif = what_different or self.value[:48*(self.big+1)]
 
     def __repr__(self):
         return self.value+self.spec
@@ -50,61 +75,28 @@ class Layout:
 layouts = {
     'eng': Layout('English🇬🇧',
                   """
-    `1234567890-=
-    qwertyuiop[]
-    asdfghjkl;'\\
-    \\zxcvbnm,./
-
-    ~!@#$%^&*()_+
-    QWERTYUIOP{}
-    ASDFGHJKL:\"|
-    |ZXCVBNM<>?
+    `1234567890-= qwertyuiop[] asdfghjkl;'\\ \\zxcvbnm,./
+    ~!@#$%^&*()_+ QWERTYUIOP{} ASDFGHJKL:\"| |ZXCVBNM<>?
     """),
+
     'ukr': Layout('Ukrainian🇺🇦',
                   """
-    `1234567890-=
-    йцукенгшщзхї
-    фівапролджєґ
-    /ячсмитьбю.
-
-    ~!"№;%:?*()_+
-    ЙЦУКЕНГШЩЗХЇ
-    ФІВАПРОЛДЖЄҐ
-    |ЯЧСМИТЬБЮ,
-
-    ́¹²§$°<>•[]—≠
-    йцў®ёнгшщзхъ
-    фывапролджэ\\
-    /яч©ми™ь«»/
-
-    ~!’₴€%:?*{}–±
-    ЙЦЎКЁНГШЩЗХЪ
-    ФЫВАПРОЛДЖЭ|
-    |ЯЧСМИТЬ„“…
+    `1234567890-= йцукенгшщзхї фівапролджєґ /ячсмитьбю.
+    ~!"№;%:?*()_+ ЙЦУКЕНГШЩЗХЇ ФІВАПРОЛДЖЄҐ |ЯЧСМИТЬБЮ,
+    ́¹²§$°<>•[]—≠ йцў®ёнгшщзхъ фывапролджэ\\ /яч©ми™ь«»/
+    ~!’₴€%:?*{}–± ЙЦЎКЁНГШЩЗХЪ ФЫВАПРОЛДЖЭ| |ЯЧСМИТЬ„“…
     """, what_different='іїє'),
+
     'rus': Layout('Russian🇷🇺',
                   """
-    ё1234567890-=
-    йцукенгшщзхъ
-    фывапролджэ\\
-    /ячсмитьбю.
-
-    Ё!"№;%:?*()_+
-    ЙЦУКЕНГШЩЗХЪ
-    ФЫВАПРОЛДЖЭ|
-    |ЯЧСМИТЬБЮ,
+    ё1234567890-= йцукенгшщзхъ фывапролджэ\\ /ячсмитьбю.
+    Ё!"№;%:?*()_+ ЙЦУКЕНГШЩЗХЪ ФЫВАПРОЛДЖЭ| |ЯЧСМИТЬБЮ,
     """, what_different='ыъэё'),
+
     'ivr': Layout('Hebrew🇮🇱',
                   """
-    ~1234567890-=
-    /'קראטוןםפ][
-    שדגכע'חלךף,\\
-    \\זסבהנמצתץ.
-
-    ;!@#$%^&*)(_+
-    QWERTYUIOP}{
-    ASDFGHJKL:\"|
-    |ZXCVBNM><?
+    ~1234567890-= /'קראטוןםפ][ שדגכע'חלךף,\\ \\זסבהנמצתץ.
+    ;!@#$%^&*)(_+ QWERTYUIOP}{ ASDFGHJKL:\"| |ZXCVBNM><?
     """, have_big_letters=False)
 }
 
@@ -112,35 +104,21 @@ layouts = {
 @bot.message_handler(commands=['start', 'help'])
 def start(m):
     buttons = types.InlineKeyboardMarkup()
-    buttons.row(
+    buttons.add(*[
         types.InlineKeyboardButton(
-            "Eng->Ukr",
-            switch_inline_query="Ghbdsn!"
-        ),
-        types.InlineKeyboardButton(
-            "Eng->Rus",
-            switch_inline_query="Ghbdtn!"
-        )
-    )
-    buttons.row(
-        types.InlineKeyboardButton(
-            "Ukr",
-            switch_inline_query="Руддщ!"
-        ),
-        types.InlineKeyboardButton(
-            "Rus",
-            switch_inline_query="Руддщ!"
-        ),
-        types.InlineKeyboardButton(
-            "Heb",
-            switch_inline_query="vku!"
-        )
+            text,switch_inline_query=query
+            ) for text,query in {
+                'Ukr':'Руддщ!',
+                'Rus':'Руддщ!',
+                'Heb':'vku!',
+                'Eng->Ukr':'Ghbdsn!',
+                'Eng->Rus':'Ghbdtn!'
+            }.items()
+        ]
     )
     bot.send_message(
         m.from_user.id,
-        "Введіть текст, будь ласка !\n" +
-        "Enter text, please !\n" +
-        "קלט טקסט, בבקשה!\n",
+        '\n'.join([lang['in'] for lang in languages]),
         reply_markup=buttons
     )
 
@@ -153,10 +131,11 @@ def translit(text):
     for layout in layouts.values():
         if text[0] in layout:
             __layouts.append(layout)
-    if len(_layouts) > 1:
-        for layout in __layouts:
-            if any([(i in text) for i in layout.dif]):
-                _layouts.append(layout)
+    for layout in __layouts:
+        if any([(i in text) for i in layout.dif]):
+            _layouts.append(layout)
+    print(_layouts)
+    _layouts = _layouts or __layouts
     for layout in _layouts:
         for another_layout in layouts.values():
             output_text += [layout.translit(another_layout, text)]
@@ -167,8 +146,10 @@ def translit(text):
 @bot.message_handler(content_types=['text'])
 def main(m):
     text = m.text
-    out = translit(text)
-    output = ''.join([o1+'\n'+o2+'\n\n' for o1,o2 in out])
+    out_text, out_title = translit(text)
+    output = ''.join([
+        o1+'\n'+o2+'\n\n' for o1,o2 in zip(out_text,out_title)
+        ])
     return bot.send_message(m.chat.id, output)
 
 
@@ -190,25 +171,26 @@ def edit(m):
 @bot.inline_handler(lambda query: True)
 def main_inline(query):
     text = query.query
+    user_lang = lang(query.from_user)
     button = types.InlineKeyboardMarkup()
     random_ = next(random_list)
     if text:
-        desc, title = translit(text)
+        title, desc = translit(text)
         output_text = title
     else:
         button.add(
             telebot.types.InlineKeyboardButton(
                 "🔄",
-                switch_inline_query_current_chat="Ghbdtn!"
+                switch_inline_query_current_chat=user_lang['out']
             )
         )
         random_ = True
-        title = ['Input some text']
-        output_text = ['Reset']
+        title = [user_lang['in']]
+        output_text = [user_lang['reset']]
         desc = [None]
     if random_:
         button.add(types.InlineKeyboardButton(
-            'Підтримати проект',
+            user_lang['donate'],
             url='https://send.monobank.ua/21gs4e2aR'
         ))
     results = [telebot.types.InlineQueryResultArticle(

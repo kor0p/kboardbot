@@ -1,0 +1,15 @@
+{
+  "name": "Keyboard layout switcher bot",
+  "description": "© kor0p",
+  "image": "",
+  "repository": "https://github.com/kor0p/kboardbot.git",
+  "keywords": ["python"],
+  "addons": [],
+  "environments": {
+    "main": {
+      "scripts": {
+        "run": "python -m main"
+      }
+    }
+  }
+}

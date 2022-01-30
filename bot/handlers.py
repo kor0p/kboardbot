@@ -159,6 +159,9 @@ def translit(text):
     temp_layouts = temp_layouts or layouts
     for layout in temp_layouts:
         for another_layout in ALL_LAYOUTS.values():
+            if layout.name == another_layout.name:
+                continue
+
             output_text += [layout.translit(another_layout, text)]
             output_title += [layout.name + '->' + another_layout.name]
     return output_text, output_title
